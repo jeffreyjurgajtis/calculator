@@ -14,9 +14,10 @@ class ViewController: UIViewController {
     
     var userIsTypingNumber = false
 
+    var engine = CalculatorEngine()
+
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
-
 
         if userIsTypingNumber {
             display.text = display.text! + digit
@@ -27,36 +28,25 @@ class ViewController: UIViewController {
     }
 
     @IBAction func operate(sender: UIButton) {
-        let operation = sender.currentTitle!
-        switch operation {
-        case "×": performOperation({ $0 * $1 })
-        case "÷": performOperation({ $1 / $0 })
-        case "+": performOperation({ $0 + $1 })
-        case "−": performOperation({ $1 - $0 })
-        case "√": performOperation({ sqrt($0) })
-        default: break
-        }
-    }
-
-    func performOperation(operation: (Double, Double) -> Double) {
-        if operandStack.count >= 2 {
-            displayValue = operation(operandStack.removeLast(), operandStack.removeLast())
+        if userIsTypingNumber {
             enter()
         }
-    }
-
-    func performOperation(operation: Double -> Double) {
-        if operandStack.count >= 1 {
-            displayValue = operation(operandStack.removeLast())
-            enter()
+        if let operation = sender.currentTitle {
+            if let result = engine.performOperation(operation) {
+                displayValue = result
+            } else {
+                displayValue = 0
+            }
         }
     }
-
-    var operandStack = Array<Double>()
 
     @IBAction func enter() {
         userIsTypingNumber = false
-        operandStack.append(displayValue)
+        if let result = engine.pushOperand(displayValue) {
+            displayValue = result
+        } else {
+            displayValue = 0
+        }
     }
 
     var displayValue: Double {
